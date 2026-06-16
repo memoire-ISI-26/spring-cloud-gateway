@@ -46,6 +46,28 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 try {
                     // Valider le token
                     jwtUtil.validateToken(authHeader);
+
+                    // Vérifier l'inactivité
+                    long now = System.currentTimeMillis();
+                    if (jwtUtil.isTokenInactive(authHeader, now)) {
+                        return onError(exchange, "Session expired due to inactivity", HttpStatus.UNAUTHORIZED);
+                    }
+                    jwtUtil.updateTokenActivity(authHeader, now);
+
+                    // Extraire les infos utilisateur et injecter les en-têtes
+                    io.jsonwebtoken.Claims claims = jwtUtil.getClaims(authHeader);
+                    String userId = claims.get("id", String.class);
+                    String role = claims.get("role", String.class);
+                    String phone = claims.getSubject();
+
+                    ServerHttpRequest mutatedRequest = request.mutate()
+                            .header("X-User-Id", userId)
+                            .header("X-User-Phone", phone)
+                            .header("X-User-Role", role)
+                            .build();
+
+                    return chain.filter(exchange.mutate().request(mutatedRequest).build());
+
                 } catch (Exception e) {
                     return onError(exchange, "Unauthorized access: invalid or expired token", HttpStatus.UNAUTHORIZED);
                 }
