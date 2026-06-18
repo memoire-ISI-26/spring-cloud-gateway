@@ -32,6 +32,10 @@ public class GatewayConfiguration {
                         .path("/accounts/**")
                         .filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
                         .uri("lb://wallet-service"))
+                .route("pricing-service", r -> r
+                        .path("/pricing/**")
+                        .filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config())))
+                        .uri("lb://pricing-service"))
                 .build();
     }
 }
