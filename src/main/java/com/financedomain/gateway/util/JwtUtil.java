@@ -18,7 +18,7 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    private static final long INACTIVITY_LIMIT_MS = 300000; // 5 minutes
+    private static final long INACTIVITY_LIMIT_MS = 600000; // 10 minutes
     private final Map<String, Long> tokenLastActivity = new ConcurrentHashMap<>();
 
     public void validateToken(final String token) {
