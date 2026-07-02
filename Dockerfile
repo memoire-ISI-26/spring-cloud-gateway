@@ -1,14 +1,13 @@
-# Étape 1 : Build de l'application avec Maven
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# ─── Étape 1 : Build ──────────────────────────────────────────────────────────
+FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN apk add --no-cache maven && mvn clean package -DskipTests
 
-# Étape 2 : Exécution de l'application avec un JRE léger
+# ─── Étape 2 : Image finale légère ───────────────────────────────────────────
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/spring-cloud-gateway-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8765
 ENTRYPOINT ["java", "-jar", "app.jar"]
