@@ -1,7 +1,6 @@
 package com.financedomain.gateway.filter;
 
 import com.financedomain.gateway.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -15,11 +14,14 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
-    @Autowired
     private RouteValidator validator;
 
-    @Autowired
     private JwtUtil jwtUtil;
+
+    public AuthenticationFilter(RouteValidator validator, JwtUtil jwtUtil) {
+        this.validator = validator;
+        this.jwtUtil = jwtUtil;
+    }
 
     public AuthenticationFilter() {
         super(Config.class);
