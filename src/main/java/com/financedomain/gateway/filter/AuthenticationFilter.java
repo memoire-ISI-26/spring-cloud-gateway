@@ -1,6 +1,8 @@
 package com.financedomain.gateway.filter;
 
 import com.financedomain.gateway.util.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
@@ -18,7 +21,9 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private JwtUtil jwtUtil;
 
+    @Autowired
     public AuthenticationFilter(RouteValidator validator, JwtUtil jwtUtil) {
+        super(Config.class);
         this.validator = validator;
         this.jwtUtil = jwtUtil;
     }
@@ -79,12 +84,21 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
+        log.warn("[AuthenticationFilter] Échec d'authentification ({}) : {}", httpStatus, err);
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
         return response.setComplete();
     }
 
     public static class Config {
-        // Configuration properties can be added here if needed
+        private String filterName = "AuthenticationFilter";
+
+        public String getFilterName() {
+            return filterName;
+        }
+
+        public void setFilterName(String filterName) {
+            this.filterName = filterName;
+        }
     }
 }
